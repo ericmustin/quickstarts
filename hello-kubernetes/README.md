@@ -57,6 +57,34 @@ You will see output like the following. All services should show ```True``` in t
   dapr-sidecar-injector  dapr-system  True     Running  1         1.0.1    13s  2021-03-08 11:00.21  
 ``` 
 
+## (Optional) Configure Tracing in Dapr with the OpenTelemetry Collector and Datadog
+
+Dapr can also be configured to create traces for each application and collect those traces in Datadog, using the OpenTelemetry Collector.
+
+Following [the guide here](https://docs.dapr.io/operations/monitoring/tracing/open-telemetry-collector/#setting-opentelemetry-collector):
+
+  1. First, add your api key to the `./deploy/opentelemetry-collector-generic-datadog.yaml` file in the `datadog` exporter configuration section.
+
+    ```
+      datadog:
+        api:
+          key: <YOUR_API_KEY>
+    ```
+
+  2. Then, apply the opentelemetry-collector configuration with
+    - `kubectl apply -f ./deploy/open-telemetry-collector-generic-datadog.yaml`
+
+  3. Next, set up both a Dapr configuration file to turn on tracing and deploy a tracing exporter component that uses the OpenTelemetry Collector.
+    - `kubectl apply -f ./deploy/collector-config.yaml`
+
+  4. Lastly, (this is already enabled in the NodeJS and Python apps in this demo), apply the appconfig configuration by adding a dapr.io/config annotation to the container that you want to participate in the distributed tracing.
+    - `dapr.io/config: "appconfig"`
+    - *note* this has been preconfigured in the Deployment yaml files in this example.
+
+Follow the rest of the steps in this README to create and configure the application. Then, if tracing has been configured correctly, you should be able to see traces in the Datadog UI like so:
+
+![example trace](https://p-qkfgo2.t2.n0.cdn.getcloudapp.com/items/2NuEgpxm/b1754cf5-80c5-4ff1-acf4-781cc1cdcf69.png?v=6dab5dfd8b4ef67ff9047e4f50bcab0b)
+
 ## Step 2 - Create and configure a state store
 
 Dapr can use a number of different state stores (Redis, CosmosDB, DynamoDB, Cassandra, etc) to persist and retrieve state. This demo will use Redis.
